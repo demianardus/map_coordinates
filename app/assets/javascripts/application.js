@@ -50,7 +50,6 @@ $(document).on('ready', function(){
 
     google.maps.event.addListener(marker, "click", function() {
       if (previous_marker != null) {
-        segments.push([markers.indexOf(previous_marker), markers.indexOf(marker)]);
 
         var segment = new google.maps.Polyline({
           path: [previous_marker.getPosition(), marker.getPosition()],
@@ -59,9 +58,21 @@ $(document).on('ready', function(){
           strokeWeight:2,
           map: map
         });
+        segments.push(segment);
+
+        var txt = segmentToText(segment) + "\n";
+        var box = $("#result");
+        box.val(box.val() + txt);
 
         google.maps.event.addListener(segment, "click", function() {
-          segment.setMap(null);
+          var sindex = segments.indexOf(segment);
+          if (sindex != -1) {
+            segments.splice(sindex, 1);
+            segment.setMap(null);
+            var remove_txt = segmentToTextNoIndex(segment);
+            var res = $("#result");
+            box.val(res.val().replace(txt, ''));
+          }
         });
         previous_marker = null;
       } else {
@@ -80,8 +91,17 @@ $(document).on('ready', function(){
   getSegments = function getSegments() {
     for (var i = 0; i < segments.length; i++) {
       var segment = segments[i];
-      console.log(i + ' ' + segment[0] + ' ' + segment[1]);
+      console.log(segmentToText(segment));
     }
+  }
+
+  function segmentToText(segment) {
+    var sindex = segments.indexOf(segment);
+    return sindex + ' ' + segment.getPath().getArray()[0].A + ' ' + segment.getPath().getArray()[0].F +  ' ' + segment.getPath().getArray()[1].A + ' ' + segment.getPath().getArray()[1].F;
+  }
+
+  function segmentToTextNoIndex(segment) {
+    return segment.getPath().getArray()[0].A + ' ' + segment.getPath().getArray()[0].F +  ' ' + segment.getPath().getArray()[1].A + ' ' + segment.getPath().getArray()[1].F;
   }
 
 });
